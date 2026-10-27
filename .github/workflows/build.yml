@@ -1,0 +1,70 @@
+name: Build and release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - run: go test ./...
+      - run: go vet ./...
+      - name: Build and package
+        shell: pwsh
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:CGO_ENABLED = '0'
+          $env:GOOS = 'windows'
+          $env:GOARCH = 'amd64'
+          New-Item -ItemType Directory -Path dist/package -Force | Out-Null
+          go build -trimpath -ldflags='-s -w' -o dist/package/redmine-gitlab-mcp.exe ./cmd/redmine-gitlab-mcp
+          if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/install.ps1 -Binary dist/package/redmine-gitlab-mcp.exe
+          if ($LASTEXITCODE -ne 0) { throw 'Installer tests failed' }
+          $version = & ./dist/package/redmine-gitlab-mcp.exe --version
+          if ($LASTEXITCODE -ne 0) { throw 'Binary failed to start' }
+          if ($env:REF_TYPE -eq 'tag' -and $env:REF_NAME -ne "v$version") {
+            throw "Tag must match the binary version v$version"
+          }
+          Copy-Item README.md, install.ps1, configure.ps1 dist/package/
+          Compress-Archive -Path dist/package/* -DestinationPath dist/redmine-gitlab-mcp-windows-amd64.zip
+          $hash = (Get-FileHash dist/redmine-gitlab-mcp-windows-amd64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          [IO.File]::WriteAllText('dist/SHA256SUMS', "$hash  redmine-gitlab-mcp-windows-amd64.zip`n", [Text.UTF8Encoding]::new($false))
+      - uses: actions/upload-artifact@v4
+        with:
+          name: redmine-gitlab-mcp-windows-amd64
+          path: |
+            dist/redmine-gitlab-mcp-windows-amd64.zip
+            dist/SHA256SUMS
+          if-no-files-found: error
+
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: redmine-gitlab-mcp-windows-amd64
+          path: dist
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: gh release create "$TAG" dist/* --verify-tag --generate-notes

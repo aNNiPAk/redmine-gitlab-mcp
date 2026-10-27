@@ -1,0 +1,5 @@
+config.local.json
+*.bak
+*.old-*
+*.test.exe
+/dist/
