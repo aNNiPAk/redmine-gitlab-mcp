@@ -25,7 +25,7 @@ type Service struct {
 
 func New(c api.Config) *Service { return &Service{API: api.NewService(c), Notes: refs.NewNoteIndex()} }
 func (s *Service) mrLocation(ctx context.Context, reference string) (int, string, string, error) {
-	m, e := refs.ParseMR(reference)
+	m, e := refs.ParseMRReference(reference, s.API.Cfg.GitlabURL)
 	if e != nil {
 		return 0, "", "", e
 	}
@@ -41,7 +41,7 @@ func (s *Service) mrProject(ctx context.Context, project, reference string) (str
 	}
 	alias := project
 	if reference != "" {
-		m, e := refs.ParseMR(reference)
+		m, e := refs.ParseMRReference(reference, s.API.Cfg.GitlabURL)
 		if e != nil {
 			return "", e
 		}

@@ -5,6 +5,32 @@ import (
 	"testing"
 )
 
+func TestParseMRReferenceURL(t *testing.T) {
+	base := "https://git.example.com/gitlab"
+	for _, input := range []string{
+		"https://git.example.com/gitlab/dev/server/merge_requests/9999",
+		"https://git.example.com/gitlab/dev/server/-/merge_requests/9999/",
+		"https://git.example.com/gitlab/dev/server/-/merge_requests/9999/diffs?view=parallel#note_1",
+	} {
+		got, err := ParseMRReference(input, base)
+		if err != nil || got != (MR{IID: 9999, Alias: "dev/server"}) {
+			t.Errorf("%s: got %#v, %v", input, got, err)
+		}
+	}
+	for _, input := range []string{
+		"https://evil.example.com/gitlab/dev/server/merge_requests/9999",
+		"http://git.example.com/gitlab/dev/server/merge_requests/9999",
+		"https://user@git.example.com/gitlab/dev/server/merge_requests/9999",
+		"https://git.example.com/gitlab-other/dev/server/merge_requests/9999",
+		"https://git.example.com/gitlab/dev/../server/merge_requests/9999",
+		"https://git.example.com/gitlab/dev/server/issues/9999",
+	} {
+		if _, err := ParseMRReference(input, base); err == nil {
+			t.Errorf("accepted invalid URL %s", input)
+		}
+	}
+}
+
 func TestParseMR(t *testing.T) {
 	for in, want := range map[string]MR{"!26": {26, ""}, "theme!26": {26, "theme"}, "dev/server!5642": {5642, "dev/server"}} {
 		got, e := ParseMR(in)

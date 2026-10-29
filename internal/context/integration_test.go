@@ -93,6 +93,14 @@ func TestEndToEndTools(t *testing.T) {
 	}
 	mr, e := s.MergeRequest(ctx, "!26", "summary", 1, 1, false)
 	check("MR", mr, e)
+	urlMR, e := s.MergeRequest(ctx, server.URL+"/git/dev/server/merge_requests/26", "summary", 1, 1, false)
+	check("MR URL", urlMR, e)
+	urlDiff, e := s.MRDiff(ctx, server.URL+"/git/dev/server/-/merge_requests/26", "test.go", 0)
+	check("MR diff URL", urlDiff, e)
+	_, e = s.mrProject(ctx, "", server.URL+"/git/dev/server/merge_requests/26")
+	if e != nil {
+		t.Fatalf("MR project URL: %v", e)
+	}
 	if api.Map(mr)["partial"] != false {
 		t.Fatalf("partial on happy path %#v", mr)
 	}

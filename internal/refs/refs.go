@@ -61,6 +61,31 @@ func baseURL(raw string) (*url.URL, error) {
 	}
 	return u, nil
 }
+
+// ParseMRReference accepts shorthand or a URL on the configured GitLab instance.
+func ParseMRReference(raw, gitlabURL string) (MR, error) {
+	raw = strings.TrimSpace(raw)
+	if !strings.HasPrefix(strings.ToLower(raw), "https://") && !strings.HasPrefix(strings.ToLower(raw), "http://") {
+		return ParseMR(raw)
+	}
+	base, err := baseURL(gitlabURL)
+	if err != nil {
+		return MR{}, err
+	}
+	u, err := url.Parse(raw)
+	if err != nil || u.User != nil || !strings.EqualFold(u.Host, base.Host) || !strings.EqualFold(u.Scheme, base.Scheme) || !strings.HasPrefix(u.EscapedPath(), base.EscapedPath()) {
+		return MR{}, fmt.Errorf("ссылка должна принадлежать настроенному GitLab")
+	}
+	projectPath, err := url.PathUnescape(strings.TrimPrefix(u.EscapedPath(), base.EscapedPath()))
+	if err != nil {
+		return MR{}, err
+	}
+	m := fullMRPath.FindStringSubmatch(projectPath)
+	if m == nil {
+		return MR{}, fmt.Errorf("ожидается URL merge request")
+	}
+	return ParseMR(m[1] + "!" + m[2])
+}
 func ParseDiscussion(raw, gitlabURL string) (Link, error) {
 	raw = strings.TrimSpace(raw)
 	mrRef, note := "", ""

@@ -115,7 +115,7 @@ func tools(s *projectcontext.Service) []mcp.Tool {
 		}
 		return s.IssueAttachment(ctx, id)
 	}))
-	t = append(t, tool("get_merge_request", "Read MR !9999 or theme!9999, summary/full; partial=true on noncritical API failure", []string{"reference"}, map[string]any{"reference": sField("!9999 or theme!9999"), "mode": sField("summary or full"), "discussionPage": nField("Discussion page default 1"), "commitsPage": nField("Commits page default 1"), "refresh": bField("Bypass cache")}, func(ctx context.Context, a map[string]any) (any, error) {
+	t = append(t, tool("get_merge_request", "Read MR !9999, theme!9999 or GitLab MR URL, summary/full; partial=true on noncritical API failure", []string{"reference"}, map[string]any{"reference": sField("!9999, theme!9999 or GitLab MR URL"), "mode": sField("summary or full"), "discussionPage": nField("Discussion page default 1"), "commitsPage": nField("Commits page default 1"), "refresh": bField("Bypass cache")}, func(ctx context.Context, a map[string]any) (any, error) {
 		ref, e := stringField("reference", a, true)
 		if e != nil {
 			return nil, e
@@ -138,7 +138,7 @@ func tools(s *projectcontext.Service) []mcp.Tool {
 		}
 		return s.MergeRequest(ctx, ref, mode, dp, cp, r)
 	}))
-	t = append(t, tool("get_mr_review", "Read MR review, unresolved discussions, linkedDiscussions, commitReferences; paginate with nextOffset", []string{"reference"}, map[string]any{"reference": sField("!9999 or theme!9999"), "offset": nField("Review offset"), "limit": nField("Page size default 20, max 50"), "includeResolved": bField("Include resolved discussions"), "refresh": bField("Bypass cache")}, func(ctx context.Context, a map[string]any) (any, error) {
+	t = append(t, tool("get_mr_review", "Read MR review, unresolved discussions, linkedDiscussions, commitReferences; paginate with nextOffset", []string{"reference"}, map[string]any{"reference": sField("!9999, theme!9999 or GitLab MR URL"), "offset": nField("Review offset"), "limit": nField("Page size default 20, max 50"), "includeResolved": bField("Include resolved discussions"), "refresh": bField("Bypass cache")}, func(ctx context.Context, a map[string]any) (any, error) {
 		ref, e := stringField("reference", a, true)
 		if e != nil {
 			return nil, e
@@ -190,7 +190,7 @@ func tools(s *projectcontext.Service) []mcp.Tool {
 		}
 		return s.FindRelated(ctx, id, project, r)
 	}))
-	t = append(t, tool("get_merge_request_diff", "Read MR diff with optional path filter and 16000-character chunks", []string{"reference"}, map[string]any{"reference": sField("!9999 or theme!9999"), "path": sField("Optional file path"), "offset": nField("Diff text offset")}, func(ctx context.Context, a map[string]any) (any, error) {
+	t = append(t, tool("get_merge_request_diff", "Read MR diff with optional path filter and 16000-character chunks", []string{"reference"}, map[string]any{"reference": sField("!9999, theme!9999 or GitLab MR URL"), "path": sField("Optional file path"), "offset": nField("Diff text offset")}, func(ctx context.Context, a map[string]any) (any, error) {
 		ref, e := stringField("reference", a, true)
 		if e != nil {
 			return nil, e
@@ -275,7 +275,7 @@ func tools(s *projectcontext.Service) []mcp.Tool {
 		}
 		return s.Compare(ctx, from, to, project, ref, path, straight, mode, offset, r)
 	}))
-	t = append(t, tool("get_pipeline_jobs", "List jobs for a GitLab pipeline ID", []string{"reference", "pipelineId"}, map[string]any{"reference": sField("!9999 or theme!9999"), "pipelineId": nField("Pipeline numeric ID"), "page": nField("Page default 1")}, func(ctx context.Context, a map[string]any) (any, error) {
+	t = append(t, tool("get_pipeline_jobs", "List jobs for a GitLab pipeline ID", []string{"reference", "pipelineId"}, map[string]any{"reference": sField("!9999, theme!9999 or GitLab MR URL"), "pipelineId": nField("Pipeline numeric ID"), "page": nField("Page default 1")}, func(ctx context.Context, a map[string]any) (any, error) {
 		ref, e := stringField("reference", a, true)
 		if e != nil {
 			return nil, e
@@ -290,7 +290,7 @@ func tools(s *projectcontext.Service) []mcp.Tool {
 		}
 		return s.PipelineJobs(ctx, ref, id, p)
 	}))
-	t = append(t, tool("get_job_trace", "Read GitLab CI job log 16000 characters per call (max 16 MiB)", []string{"reference", "jobId"}, map[string]any{"reference": sField("!9999 or theme!9999"), "jobId": nField("CI job numeric ID"), "offset": nField("Trace chunk offset")}, func(ctx context.Context, a map[string]any) (any, error) {
+	t = append(t, tool("get_job_trace", "Read GitLab CI job log 16000 characters per call (max 16 MiB)", []string{"reference", "jobId"}, map[string]any{"reference": sField("!9999, theme!9999 or GitLab MR URL"), "jobId": nField("CI job numeric ID"), "offset": nField("Trace chunk offset")}, func(ctx context.Context, a map[string]any) (any, error) {
 		ref, e := stringField("reference", a, true)
 		if e != nil {
 			return nil, e
