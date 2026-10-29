@@ -15,7 +15,7 @@ $gitlabProject = (Read-Host 'Default GitLab project ID or full namespace/path').
 if (-not $gitlabProject) { throw 'Default GitLab project is required.' }
 
 $gitlabProjects = [ordered]@{}
-Write-Host 'Optional project aliases. Unknown aliases will be searched in GitLab automatically.'
+Write-Host 'Optional project aliases. Short names use the default project namespace when available.'
 while ($true) {
     $alias = (Read-Host 'Project alias (press Enter to finish)').Trim()
     if (-not $alias) { break }

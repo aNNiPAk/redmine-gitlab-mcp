@@ -2,12 +2,58 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 )
+
+func TestProjectNamespaceResolution(t *testing.T) {
+	projects := []map[string]any{
+		{"id": 1, "path": "server", "path_with_namespace": "dev/server"},
+		{"id": 2, "path": "design", "path_with_namespace": "dev/design"},
+		{"id": 3, "path": "design", "path_with_namespace": "other/design"},
+		{"id": 4, "path": "design", "path_with_namespace": "dev/team/design"},
+	}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api/v4/projects" {
+			t.Errorf("unexpected request: %s", r.URL.Path)
+		}
+		_ = json.NewEncoder(w).Encode(projects)
+	}))
+	defer srv.Close()
+	cases := []struct {
+		name, defaultProject, alias, want string
+		aliases                           map[string]string
+		wantError                         string
+	}{
+		{"sibling", "dev/server/", "design", "2", nil, ""},
+		{"nested", "dev/team/server", "design", "4", nil, ""},
+		{"default with slash", "dev/server/", "", "1", nil, ""},
+		{"explicit alias", "dev/server", "design", "3", map[string]string{"design": "other/design"}, ""},
+		{"explicit path", "dev/server", "other/design", "3", nil, ""},
+		{"numeric project", "dev/server", "55", "55", nil, ""},
+		{"numeric default", "42", "design", "", nil, "неоднозначный"},
+		{"unqualified default", "server", "design", "", nil, "неоднозначный"},
+		{"missing sibling", "missing/server", "design", "", nil, "не найден"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewService(Config{GitlabURL: srv.URL, GitlabProject: tc.defaultProject, GitlabProjects: tc.aliases})
+			got, err := s.Project(context.Background(), tc.alias)
+			if tc.wantError != "" {
+				if err == nil || !strings.Contains(err.Error(), tc.wantError) {
+					t.Fatalf("got %q, %v; want error %q", got, err, tc.wantError)
+				}
+			} else if err != nil || got != tc.want {
+				t.Fatalf("got %q, %v; want %q", got, err, tc.want)
+			}
+		})
+	}
+}
 
 func TestRetryAndCache(t *testing.T) {
 	var n atomic.Int32

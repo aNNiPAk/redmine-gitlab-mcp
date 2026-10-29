@@ -375,6 +375,7 @@ func (s *Service) GLPage(ctx context.Context, rel string, page, perPage int, fre
 }
 func (s *Service) Project(ctx context.Context, alias string) (string, error) {
 	configured := s.Cfg.GitlabProject
+	matchedAlias := false
 	if alias != "" {
 		configured = alias
 		keys := make([]string, 0, len(s.Cfg.GitlabProjects))
@@ -385,11 +386,24 @@ func (s *Service) Project(ctx context.Context, alias string) (string, error) {
 		for _, k := range keys {
 			if strings.EqualFold(k, alias) {
 				configured = s.Cfg.GitlabProjects[k]
+				matchedAlias = true
 				break
 			}
 		}
 	}
 	configured = strings.TrimSpace(configured)
+	// Unmapped short names refer to sibling projects when the default project
+	// identifies a namespace. Explicit aliases, full paths and IDs win.
+	defaultPath := strings.TrimRight(strings.TrimSpace(s.Cfg.GitlabProject), "/")
+	if alias == "" {
+		configured = defaultPath
+	} else if !matchedAlias && !strings.Contains(configured, "/") {
+		if id, err := strconv.Atoi(configured); err != nil || id <= 0 {
+			if i := strings.LastIndex(defaultPath, "/"); i > 0 {
+				configured = defaultPath[:i+1] + configured
+			}
+		}
+	}
 	if id, e := strconv.Atoi(configured); e == nil && id > 0 {
 		return configured, nil
 	}
