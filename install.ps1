@@ -119,7 +119,7 @@ try {
     } elseif (Test-Path -LiteralPath (Join-Path $PSScriptRoot 'config.local.json')) {
         Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'config.local.json') -Destination (Join-Path $stage 'config.local.json')
     } else {
-        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage 'configure.ps1')
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $stage 'configure.ps1') -Staging
         if ($LASTEXITCODE -ne 0) { throw 'Configuration was not created.' }
     }
     $cfg = Get-Content -LiteralPath (Join-Path $stage 'config.local.json') -Encoding UTF8 -Raw | ConvertFrom-Json
@@ -147,6 +147,7 @@ try {
         throw
     }
     Write-Host "Installed: $targetExe"
+    Write-Host "Server configuration: $(Join-Path $installDir 'config.local.json')"
     if ($clientConfig) { Write-Host "Client configuration: $clientConfig" }
     if ($oldExists) { Write-Host "Previous installation retained: $backup" }
     if ($Client -eq 'pi') { Write-Host 'Pi requires built-in MCP support (0.99+) or a compatible MCP adapter; reload Pi after setup.' }

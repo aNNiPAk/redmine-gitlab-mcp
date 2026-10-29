@@ -1,3 +1,5 @@
+param([switch]$Staging)
+
 $ErrorActionPreference = 'Stop'
 
 function Read-SecretText([string]$Prompt) {
@@ -36,5 +38,6 @@ if ($gitlabProjects.Count) { $config.gitlabProjects = $gitlabProjects }
 
 $destination = Join-Path $PSScriptRoot 'config.local.json'
 $config | ConvertTo-Json -Depth 4 | Set-Content -Path $destination -Encoding UTF8
-Write-Host "Configuration created: $destination"
+if ($Staging) { Write-Host 'Configuration prepared.' }
+else { Write-Host "Configuration created: $destination" }
 Write-Host 'File contains plaintext secrets: do not commit it or share it.'
