@@ -34,6 +34,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Build failed' }
           powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/install.ps1 -Binary dist/package/redmine-gitlab-mcp.exe
           if ($LASTEXITCODE -ne 0) { throw 'Installer tests failed' }
+          powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/install-online.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'Online installer tests failed' }
           $version = & ./dist/package/redmine-gitlab-mcp.exe --version
           if ($LASTEXITCODE -ne 0) { throw 'Binary failed to start' }
           if ($env:REF_TYPE -eq 'tag' -and $env:REF_NAME -ne "v$version") {

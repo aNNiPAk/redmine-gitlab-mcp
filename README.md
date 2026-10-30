@@ -17,16 +17,15 @@ Redmine GitLab MCP помогает AI-ассистентам получать �
 
 ## Установка в Windows
 
-1. Скачайте архив `redmine-gitlab-mcp-windows-amd64.zip` из GitHub Releases и распакуйте его в отдельную папку.
-2. Откройте PowerShell в этой папке и выполните:
+Вставьте команду в PowerShell или командную строку Windows:
 
-   ```powershell
-   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
-   ```
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; irm https://raw.githubusercontent.com/aNNiPAk/redmine-gitlab-mcp/main/install-online.ps1 | iex"
+```
 
-3. Выберите клиент: VS Code Chat / GitHub Copilot CLI, OpenCode, Pi, Zed или ручную настройку. Для OpenCode укажите основную версию: 1 или 2.
-4. Укажите адреса Redmine и GitLab, токены и проект GitLab по умолчанию. При желании добавьте короткие имена других проектов.
-5. Перезапустите выбранный клиент и проверьте подключение MCP-сервера `redmine-gitlab-mcp`.
+Команда скачивает последний релиз, проверяет SHA-256 архива и запускает установщик. Выберите клиент, укажите адреса Redmine и GitLab, токены и проект GitLab по умолчанию, затем перезапустите клиент. Для OpenCode понадобится указать основную версию: 1 или 2.
+
+Также можно скачать `redmine-gitlab-mcp-windows-amd64.zip` из GitHub Releases, распаковать его и запустить `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1` из папки архива.
 
 Установщик добавляет сервер в глобальную конфигурацию выбранного клиента, сохраняя другие настройки. При повторном запуске можно подключить другой клиент: сервер и его настройки будут общими. При обновлении сначала остановите сервер в клиентах и снова запустите установщик. Он сохранит текущие настройки и создаст резервную копию предыдущей установки; путь к ней появится в выводе. Путь к файлу настроек клиента выводится после установки.
 
