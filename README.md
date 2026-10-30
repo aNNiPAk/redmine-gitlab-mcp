@@ -71,4 +71,4 @@ go build -trimpath -ldflags="-s -w" -o dist/redmine-gitlab-mcp.exe ./cmd/redmine
 
 Чтобы запустить установщик из исходников, поместите бинарник, `install.ps1`, `configure.ps1` и README в одну папку.
 
-GitHub Actions проверяет код при изменениях и pull request. Workflow **Build and release** можно запустить вручную для получения архива; отправка тега `v*` дополнительно создаёт GitHub Release. Тег должен совпадать с версией в `internal/version/version.go`, например `v1.0.1`.
+GitHub Actions проверяет код при изменениях и pull request. Workflow **Build and release** можно запустить вручную для получения архива; отправка тега `v*` дополнительно создаёт GitHub Release. Тег должен совпадать с версией в `internal/version/version.go`, например `v1.0.2`.
