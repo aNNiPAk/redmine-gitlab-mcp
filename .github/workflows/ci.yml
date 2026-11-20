@@ -22,3 +22,11 @@ jobs:
         run: test -z "$(gofmt -l $(git ls-files '*.go'))"
       - run: go test ./...
       - run: go vet ./...
+      - name: Build and start Linux binary
+        env:
+          CGO_ENABLED: '0'
+          GOOS: linux
+          GOARCH: amd64
+        run: |
+          go build -trimpath -ldflags='-s -w' -o dist/redmine-gitlab-mcp ./cmd/redmine-gitlab-mcp
+          ./dist/redmine-gitlab-mcp --version
