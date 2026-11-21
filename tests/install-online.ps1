@@ -24,7 +24,8 @@ try {
             Copy-Item -LiteralPath $env:REDMINE_GITLAB_MCP_TEST_ARCHIVE -Destination $OutFile
         } elseif ($Uri.EndsWith('/SHA256SUMS')) {
             $hash = if ($env:REDMINE_GITLAB_MCP_TEST_BAD_HASH -eq '1') { '0' * 64 } else { $env:REDMINE_GITLAB_MCP_TEST_HASH }
-            [IO.File]::WriteAllText($OutFile, "$hash  redmine-gitlab-mcp-windows-amd64.zip`n")
+            $linuxHash = 'a' * 64
+            [IO.File]::WriteAllText($OutFile, "$hash  redmine-gitlab-mcp-windows-amd64.zip`n$linuxHash  redmine-gitlab-mcp-linux-amd64.tar.gz`n")
         } else { throw "Unexpected URL: $Uri" }
     }
     & (Join-Path $PSScriptRoot '../install-online.ps1')

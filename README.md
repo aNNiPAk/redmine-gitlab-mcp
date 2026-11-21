@@ -71,4 +71,28 @@ go build -trimpath -ldflags="-s -w" -o dist/redmine-gitlab-mcp.exe ./cmd/redmine
 
 Чтобы запустить установщик из исходников, поместите бинарник, `install.ps1`, `configure.ps1` и README в одну папку.
 
-GitHub Actions проверяет код при изменениях и pull request. Workflow **Build and release** можно запустить вручную для получения архива; отправка тега `v*` дополнительно создаёт GitHub Release. Тег должен совпадать с версией в `internal/version/version.go`, например `v1.0.2`.
+### Ubuntu и Debian x86-64
+
+Для локальной сборки установите Go 1.23 или новее. Если системный пакет предоставляет более раннюю версию, используйте [официальный дистрибутив Go](https://go.dev/doc/install).
+
+```bash
+go version
+CGO_ENABLED=0 go test ./...
+CGO_ENABLED=0 go vet ./...
+mkdir -p dist
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+  -trimpath -ldflags='-s -w' \
+  -o dist/redmine-gitlab-mcp ./cmd/redmine-gitlab-mcp
+./dist/redmine-gitlab-mcp --version
+```
+
+Для запуска готовой сборки скачайте Linux-архив и `SHA256SUMS` из одного выпуска или артефакта Actions, затем проверьте и распакуйте архив:
+
+```bash
+grep '  redmine-gitlab-mcp-linux-amd64\.tar\.gz$' SHA256SUMS | sha256sum -c - &&
+  tar -xzf redmine-gitlab-mcp-linux-amd64.tar.gz
+```
+
+Укажите абсолютный путь к бинарнику как команду MCP-сервера (stdio). Файл `config.local.json` можно положить рядом с бинарником или передать его путь через `--config`.
+
+GitHub Actions проверяет код и собирает Linux-бинарник при изменениях и pull request. Ручной запуск **Build and release** сохраняет архивы Windows и Linux в Actions. Отправка тега `v*` публикует оба архива и общий `SHA256SUMS` в GitHub Releases. Тег должен совпадать с версией в `internal/version/version.go`, например `v1.0.2`.
